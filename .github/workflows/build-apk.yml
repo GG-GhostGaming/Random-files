@@ -1,0 +1,39 @@
+name: Build Project Mythara APK
+
+on:
+  push:
+    branches: [ build-apk ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout project_mythara
+      run: git clone https://github.com/ankurCES/project_mythara.git
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Make gradlew executable
+      working-directory: ./project_mythara
+      run: chmod +x gradlew
+
+    - name: Build debug APK
+      working-directory: ./project_mythara
+      run: ./gradlew :app:assembleDebug
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-debug.apk
+        path: project_mythara/app/build/outputs/apk/debug/app-debug.apk
+        retention-days: 30
+
+    - name: List build outputs
+      working-directory: ./project_mythara
+      run: ls -la app/build/outputs/apk/debug/
