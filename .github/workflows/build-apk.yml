@@ -19,13 +19,21 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Create local.properties with dummy Meta DAT values
+      working-directory: ./project_mythara
+      run: |
+        echo "mwdat_application_id=0" >> local.properties
+        echo "mwdat_client_token=dummy" >> local.properties
+
     - name: Make gradlew executable
       working-directory: ./project_mythara
       run: chmod +x gradlew
 
-    - name: Build debug APK
+    - name: Build debug APK with --no-daemon
       working-directory: ./project_mythara
-      run: ./gradlew :app:assembleDebug
+      run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+      env:
+        GRADLE_OPTS: -Xmx2048m
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
@@ -35,5 +43,11 @@ jobs:
         retention-days: 30
 
     - name: List build outputs
+      if: always()
       working-directory: ./project_mythara
-      run: ls -la app/build/outputs/apk/debug/
+      run: |
+        echo "=== Build outputs directory ===" 
+        ls -la app/build/outputs/apk/debug/ || echo "APK directory not found"
+        echo ""
+        echo "=== Full build output tree ===" 
+        find app/build -type f -name "*.apk" 2>/dev/null || echo "No APKs found"
