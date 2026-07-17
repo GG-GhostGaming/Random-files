@@ -19,21 +19,23 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Create local.properties with dummy Meta DAT values
+    - name: Create local.properties with dummy Meta DAT values and GitHub token
       working-directory: ./project_mythara
       run: |
         echo "mwdat_application_id=0" >> local.properties
         echo "mwdat_client_token=dummy" >> local.properties
+        echo "github_token=${{ secrets.GITHUB_TOKEN }}" >> local.properties
 
     - name: Make gradlew executable
       working-directory: ./project_mythara
       run: chmod +x gradlew
 
-    - name: Build debug APK with --no-daemon
+    - name: Build debug APK
       working-directory: ./project_mythara
       run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
       env:
         GRADLE_OPTS: -Xmx2048m
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
