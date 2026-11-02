@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_DIR="$(cd "$(dirname "$0")" && pwd)"
+GRADLE_VERSION="8.7"
+GRADLE_HOME="$HOME/.gradle/wrapper/$GRADLE_VERSION"
+GRADLE_ZIP="$GRADLE_HOME/gradle-$GRADLE_VERSION-bin.zip"
+GRADLE_DIST="$GRADLE_HOME/gradle-$GRADLE_VERSION"
+
+mkdir -p "$GRADLE_HOME"
+
+if [ ! -x "$GRADLE_DIST/bin/gradle" ]; then
+  if [ ! -f "$GRADLE_ZIP" ]; then
+    echo "Downloading Gradle $GRADLE_VERSION..."
+    curl -L "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" -o "$GRADLE_ZIP"
+  fi
+
+  echo "Extracting Gradle $GRADLE_VERSION..."
+  unzip -oq "$GRADLE_ZIP" -d "$GRADLE_HOME"
+fi
+
+export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
+if [ ! -d "$ANDROID_HOME" ]; then
+  echo "Android SDK not found. Set ANDROID_HOME or ANDROID_SDK_ROOT to the SDK install directory."
+  exit 1
+fi
+
+exec "$GRADLE_DIST/bin/gradle" -p "$APP_DIR" "$@"
